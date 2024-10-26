@@ -14,7 +14,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/PrajaktaMhaske/DevOps-CICD-Project.git'
             }
         }
-       stage('Compile') {
+        stage('Compile') {
             steps {
                 sh "mvn compile"
             }
