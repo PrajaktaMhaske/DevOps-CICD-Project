@@ -1,27 +1,48 @@
 pipeline {
     agent any
     tools {
-        jdk "jdk11"
-        maven "maven3"
+        jdk "jdk"
+        maven "maven"
     }
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
-        JAVA_HOME = tool 'jdk11'
-        PATH = "${env.JAVA_HOME}/bin:${env.PATH}"
     }
     
     stages {
         stage('Git Checkout') {
             steps {
+                cleanWs() // Clean workspace before checkout
                 git branch: 'main', url: 'https://github.com/PrajaktaMhaske/DevOps-CICD-Project.git'
+                
+                // Verify repository contents after checkout
+                sh '''
+                    echo "Listing workspace contents:"
+                    ls -la
+                    
+                    echo "\nChecking for pom.xml:"
+                    find . -name pom.xml
+                '''
+            }
+        }
+        stage('Verify POM') {
+            steps {
+                script {
+                    def pomExists = fileExists 'pom.xml'
+                    if (!pomExists) {
+                        error "pom.xml not found in workspace. Please ensure the file exists in the repository."
+                    }
+                }
+                sh 'cat pom.xml' // Display POM contents for debugging
             }
         }
         stage('Compile') {
             steps {
                  sh '''
+                    echo "Current directory: ${PWD}"
+                    echo "Directory contents:"
+                    ls -la
+                    
                     mvn -v
-                    echo "JAVA_HOME: ${JAVA_HOME}"
-                    echo "PATH: ${PATH}"
                     mvn clean compile -e
                 '''
             }
